@@ -59,7 +59,7 @@ export function joystickVector(dx, dy, radius) {
     dx = (dx / dist) * radius;
     dy = (dy / dist) * radius;
   }
-  return { x: Math.round((dx / radius) * 100), y: Math.round((-dy / radius) * 100), dx, dy };
+  return { x: Math.round((dx / radius) * 100) || 0, y: Math.round((-dy / radius) * 100) || 0, dx, dy };
 }
 
 /** Mesmo cálculo do firmware (drive()) — usado para exibir a potência de cada lado. */

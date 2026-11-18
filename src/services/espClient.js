@@ -15,7 +15,13 @@ export class EspClient {
     this.onStatus = onStatus || (() => {});
     this.onConfig = onConfig || (() => {});
     this.reconnectMs = reconnectMs;
-    this.t = timers || { setTimeout, clearTimeout, setInterval, clearInterval };
+    // funções de tempo chamadas sem "this" (no navegador, chamá-las como método gera "Illegal invocation")
+    this.t = timers || {
+      setTimeout: (fn, ms) => setTimeout(fn, ms),
+      clearTimeout: (id) => clearTimeout(id),
+      setInterval: (fn, ms) => setInterval(fn, ms),
+      clearInterval: (id) => clearInterval(id),
+    };
     this.ws = null;
     this.status = 'idle';
     this.vector = { x: 0, y: 0 };
