@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_HOST, PRESET_POSES } from './protocol';
+import { isValidPoseName } from './validators';
 
 /**
  * PERSISTÊNCIA DE DADOS (AsyncStorage) — separada por usuário logado.
@@ -47,6 +48,7 @@ export async function loadPoses(user) {
 export async function addPose(user, name, angles) {
   const trimmed = String(name || '').trim();
   if (!trimmed) throw new Error('Dê um nome para a pose.');
+  if (!isValidPoseName(trimmed)) throw new Error('Use só letras, números e espaços (até 30 caracteres).');
   if (!Array.isArray(angles) || angles.length !== 4) throw new Error('Pose inválida.');
   const poses = await loadPoses(user);
   const pose = {
@@ -81,4 +83,51 @@ export async function addHistory(user, type, message) {
 export async function clearHistory(user) {
   await writeJson(key(user, 'history'), []);
   return [];
+}
+
+/* ---------- Todos os dados do usuário (getAllKeys + multiGet — aula 4) ---------- */
+export async function listUserData(user) {
+  const prefix = key(user, '');
+  const keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith(prefix));
+  const pairs = await AsyncStorage.multiGet(keys); // [[chave, valor], ...]
+  return pairs.map(([k, value]) => {
+    let itens = 1;
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) itens = parsed.length;
+    } catch {
+      /* valor não é JSON */
+    }
+    return { key: k, nome: k.slice(prefix.length), itens, bytes: (value || '').length };
+  });
+}
+
+export async function clearUserData(user) {
+  const prefix = key(user, '');
+  const keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith(prefix));
+  await AsyncStorage.multiRemove(keys);
+  return keys.length;
+}
+
+/* ---------- Histórico agrupado por dia (para a SectionList) ---------- */
+const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+export function groupHistoryByDay(history, now = new Date()) {
+  const ontem = new Date(now);
+  ontem.setDate(now.getDate() - 1);
+  const p = (n) => String(n).padStart(2, '0');
+  const sections = [];
+  const index = {};
+  for (const item of history) {
+    const d = new Date(item.at);
+    const k = dayKey(d);
+    if (!(k in index)) {
+      const title =
+        k === dayKey(now) ? 'Hoje' : k === dayKey(ontem) ? 'Ontem' : `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+      index[k] = sections.length;
+      sections.push({ title, data: [] });
+    }
+    sections[index[k]].data.push(item);
+  }
+  return sections;
 }

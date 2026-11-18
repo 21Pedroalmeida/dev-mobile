@@ -1,34 +1,31 @@
 import React from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, styles as ui } from '../components/ui';
 import { useEsp } from '../context/EspContext';
 import { JOINT_NAMES } from '../services/protocol';
 import { colors, radius } from '../theme';
 
-export function PoseItem({ pose, onApply, onDelete }) {
+/** Item da lista: toque no card abre os detalhes; botão aplica a pose. */
+export function PoseItem({ pose, onApply, onOpen }) {
   return (
-    <View style={s.item} testID={`pose-${pose.id}`}>
+    <Pressable style={s.item} testID={`pose-${pose.id}`} onPress={() => onOpen(pose)}>
       <View style={{ flex: 1 }}>
         <Text style={s.name}>{pose.name}</Text>
         <Text style={s.angles}>{pose.angles.map((a, i) => `${JOINT_NAMES[i]} ${a}°`).join('  ·  ')}</Text>
+        <Text style={s.more}>Toque para ver detalhes ›</Text>
       </View>
-      <View style={{ gap: 6 }}>
-        <Button small variant="accent" title="Aplicar" onPress={() => onApply(pose)} testID={`apply-${pose.id}`} />
-        <Button small variant="outline" title="Excluir" onPress={() => onDelete(pose)} testID={`delete-${pose.id}`} />
-      </View>
-    </View>
+      <Button small variant="accent" title="Aplicar" onPress={() => onApply(pose)} testID={`apply-${pose.id}`} />
+    </Pressable>
   );
 }
 
-/** Lista de poses salvas — usa FlatList. */
-export default function PosesScreen() {
+/**
+ * Lista de poses salvas — FlatList (aula 2).
+ * data → lista de objetos | renderItem → como desenhar cada um | keyExtractor → id de cada item
+ * Ao tocar, navega para o Detalhe passando a pose como parâmetro (navigation.navigate — aula 3).
+ */
+export default function PosesScreen({ navigation }) {
   const esp = useEsp();
-
-  const confirmDelete = (pose) =>
-    Alert.alert('Excluir pose', `Excluir "${pose.name}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Excluir', style: 'destructive', onPress: () => esp.removePose(pose.id) },
-    ]);
 
   return (
     <FlatList
@@ -37,9 +34,19 @@ export default function PosesScreen() {
       contentContainerStyle={ui.content}
       data={esp.poses}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <PoseItem pose={item} onApply={esp.applyPose} onDelete={confirmDelete} />}
+      renderItem={({ item }) => (
+        <PoseItem
+          pose={item}
+          onApply={esp.applyPose}
+          onOpen={(pose) => navigation.navigate('DetalhePose', { pose })}
+        />
+      )}
       ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-      ListHeaderComponent={<Text style={[ui.muted, { marginBottom: 12 }]}>Toque em Aplicar para mover o braço até a pose.</Text>}
+      ListHeaderComponent={
+        <Text style={[ui.muted, { marginBottom: 12 }]}>
+          {esp.poses.length} pose(s) salva(s). Crie novas na aba Braço.
+        </Text>
+      }
       ListEmptyComponent={
         <Text testID="poses-empty" style={[ui.muted, { textAlign: 'center', marginTop: 40 }]}>
           Nenhuma pose salva. Crie uma na aba Braço.
@@ -62,4 +69,5 @@ const s = StyleSheet.create({
   },
   name: { color: colors.text, fontWeight: '700', fontSize: 16, marginBottom: 4 },
   angles: { color: colors.muted, fontSize: 12 },
+  more: { color: colors.accent, fontSize: 12, marginTop: 6 },
 });

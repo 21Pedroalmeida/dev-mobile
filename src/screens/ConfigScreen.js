@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Switch, Text, View } from 'react-native';
 import { Button, Card, Field, StatusBadge, styles } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useEsp } from '../context/EspContext';
-import { infoUrl } from '../services/protocol';
-import { SIMULATED_INFO } from '../services/espSimulator';
+import { getDeviceInfo, formatUptime } from '../services/espInfo';
+import { isValidIp } from '../services/validators';
 import { colors } from '../theme';
 
 function ToggleRow({ label, hint, value, onValueChange, testID }) {
@@ -31,18 +31,32 @@ export default function ConfigScreen() {
   const { settings, cfg } = esp;
   const [host, setHost] = useState(settings.host);
   const [info, setInfo] = useState(null);
+  const [carregando, setCarregando] = useState(false);
+  const [ipErro, setIpErro] = useState('');
 
   useEffect(() => setHost(settings.host), [settings.host]);
 
+  // GET /api/info com axios (aula 6)
   async function loadInfo() {
-    if (settings.demo) return setInfo(SIMULATED_INFO);
+    setCarregando(true);
     try {
-      const res = await fetch(infoUrl(settings.host));
-      setInfo(await res.json());
+      setInfo(await getDeviceInfo(settings.host, settings.demo));
     } catch {
       setInfo(null);
       Alert.alert('Erro', 'Não foi possível ler /api/info do ESP32.');
+    } finally {
+      setCarregando(false);
     }
+  }
+
+  // Valida o IP com regex antes de salvar (aula de Regex)
+  function salvarIp() {
+    if (!isValidIp(host)) {
+      setIpErro('IP inválido. Use o formato 192.168.4.1');
+      return;
+    }
+    setIpErro('');
+    esp.updateSettings({ host: host.trim() });
   }
 
   useEffect(() => {
@@ -69,14 +83,23 @@ export default function ConfigScreen() {
           label="IP do ESP32"
           testID="host-input"
           value={host}
-          onChangeText={setHost}
+          onChangeText={(t) => {
+            setHost(t);
+            setIpErro('');
+          }}
           autoCapitalize="none"
           keyboardType="numbers-and-punctuation"
           editable={!settings.demo}
         />
+        {ipErro ? (
+          <Text testID="ip-error" style={{ color: colors.danger, marginTop: -6, marginBottom: 10 }}>
+            {ipErro}
+          </Text>
+        ) : null}
         <Button
+          testID="save-ip"
           title={host.trim() !== settings.host ? 'Salvar IP e conectar' : 'Reconectar'}
-          onPress={() => (host.trim() !== settings.host ? esp.updateSettings({ host: host.trim() }) : esp.reconnect())}
+          onPress={() => (host.trim() !== settings.host ? salvarIp() : esp.reconnect())}
         />
         <Text style={[styles.muted, { fontSize: 12, marginTop: 10 }]}>
           Conecte o celular ao Wi-Fi "BMPTECH-Car" (senha 12345678). Se o Android avisar "sem internet", escolha manter a conexão.
@@ -109,7 +132,9 @@ export default function ConfigScreen() {
       </Card>
 
       <Card title="Dispositivo" color="#24324a" right={<Button small variant="outline" title="Atualizar" onPress={loadInfo} />}>
-        {info ? (
+        {carregando ? (
+          <ActivityIndicator color={colors.accent} />
+        ) : info ? (
           [
             ['Firmware', info.firmware],
             ['Build', info.build],
@@ -117,6 +142,7 @@ export default function ConfigScreen() {
             ['IP', info.ip],
             ['MAC', info.mac],
             ['Clientes', info.clients],
+            ['Ligado há', formatUptime(info.uptime)],
             ['Memória livre', `${Math.round((info.heap || 0) / 1024)} KB`],
           ].map(([k, v]) => (
             <View key={k} style={[styles.row, { justifyContent: 'space-between', marginBottom: 6 }]}>

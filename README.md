@@ -7,13 +7,54 @@ do firmware `BMPTECH_Car_Controller` (ESP32-S3), via WebSocket (`ws://192.168.4.
 
 | Requisito | Implementação | Arquivos |
 |---|---|---|
-| **Recurso do celular** | **Vibração** (joystick, PARAR TUDO, conectar/desconectar) e **Notificação local** (carrinho conectou/desconectou) | `src/services/deviceFeedback.js`, `src/context/EspContext.js` |
-| **FlatList** | Lista de **poses salvas** do braço e **histórico** de eventos | `src/screens/PosesScreen.js`, `src/screens/HistoryScreen.js` |
-| **Login com criptografia** | Senha nunca salva em texto puro: **salt aleatório (16 bytes) + SHA-256 com 1000 rodadas** (key stretching), comparação em tempo constante, guardado no **SecureStore** (Keychain/Keystore) | `src/services/passwordHasher.js`, `src/services/authService.js` |
-| **Persistência de dados** | **AsyncStorage** por usuário: poses, histórico, configurações (IP, modo demo, vibração, notificações). Usuários e sessão no SecureStore | `src/services/storage.js` |
-| **Git** | Repositório com histórico de commits (`git log`) | — |
-| **Mínimo de 3 telas** | 7 telas: Login, Cadastro, Controle, Braço, Poses, Histórico, Config | `src/screens/` |
-| **Testes automatizados** | **Jest + React Native Testing Library**: 54 testes (criptografia, login, persistência, protocolo, WebSocket, vibração/notificação, telas e FlatList) | `__tests__/` |
+| **Recurso do celular** | **Vibração**, **Notificação** local e **WhatsApp** (compartilhar pose via `Linking`) | `src/services/deviceFeedback.js`, `src/services/whatsapp.js` |
+| **FlatList** | Lista de **poses salvas** (+ SectionList no histórico) | `src/screens/PosesScreen.js`, `src/screens/HistoryScreen.js` |
+| **Login com criptografia** | Senha nunca salva em texto puro: **hash SHA-256 com salt** (1000 rodadas), guardado no **SecureStore** | `src/services/passwordHasher.js`, `src/services/authService.js` |
+| **Persistência de dados** | **AsyncStorage** por usuário (poses, histórico, configurações) + tela "Meus dados" com `getAllKeys`/`multiGet` | `src/services/storage.js`, `src/screens/DataScreen.js` |
+| **Git** | Histórico de commits + **CI no GitHub Actions** rodando os testes | `.github/workflows/testes.yml` |
+| **Mínimo de 3 telas** | 10 telas: Login, Cadastro, Controle, Braço, Poses, Detalhe da pose, Histórico, Configurações, Meus dados, Sobre | `src/screens/` |
+| **Testes automatizados** | **Jest + Testing Library**: 78 testes (unitários, **mock do axios**, interface) | `__tests__/` |
+
+## Conteúdo das aulas usado no app
+
+| Aula | Conteúdo | Onde aparece |
+|---|---|---|
+| 1–2 | Expo, JSX, StyleSheet, `View`/`Text`/`TextInput`/`ScrollView`, `useState`, arrow functions | todas as telas |
+| 2 | `ActivityIndicator` | carregamento do login e das informações do ESP32 |
+| 2 | `Dimensions` / tela responsiva | joystick usa a largura da tela (`useWindowDimensions`) |
+| 2 | **FlatList** e **SectionList** | Poses (FlatList) e Histórico agrupado por dia (SectionList) |
+| 2 | `Linking.openURL` | botão "Compartilhar no WhatsApp" |
+| 3 | **Modal** | "Salvar pose atual" (aba Braço) |
+| 3 | **Stack + Tab + Drawer** e **navegação protegida** (`EstaLogado ? ... : ...`) | `App.js` |
+| 3 | `navigation.navigate('Tela', {params})` / `route.params` | Poses → Detalhe da pose |
+| 3–4 | `useEffect` | carregar dados salvos ao abrir o app |
+| 4 | `JSON.stringify` / `JSON.parse`, funções `async`/`await` | `storage.js`, `authService.js` |
+| 4 | **AsyncStorage** (`setItem`, `getItem`, `getAllKeys`, `multiGet`, `multiRemove`) | `storage.js`, tela Meus dados |
+| 5 | Senha com **hash SHA-256** (nunca salvar a original) | `passwordHasher.js` (expo-crypto, pois o `react-native-hash` não roda no Expo Go) |
+| 6 | **axios** GET em API | `espInfo.js` → `GET http://192.168.4.1/api/info` |
+| 6 | **Jest** + **mock** de API + teste de interface | `__tests__/aulaRecursos.test.js`, `__tests__/screens.test.js` |
+| 6 | Git e CI/CD | commits + GitHub Actions |
+| Regex | validação com expressão regular | IP do ESP32, nome de usuário e nome de pose (`validators.js`) |
+
+## Navegação (igual ao exercício da aula 3)
+
+```
+EstaLogado ? (
+  Drawer
+   ├─ Início → Tab
+   │            ├─ Controle
+   │            ├─ Braço
+   │            ├─ Poses → Stack (Lista → Detalhe)
+   │            └─ Histórico
+   ├─ Configurações
+   ├─ Meus dados
+   └─ Sobre
+) : (
+  Stack
+   ├─ Login
+   └─ Cadastro
+)
+```
 
 ## Como rodar
 
@@ -40,6 +81,9 @@ src/
   context/AuthContext.js    sessão do usuário
   context/EspContext.js     conexão com o carrinho + dados persistidos
   services/
+    validators.js           regex (IP, usuário, nome de pose)
+    espInfo.js              axios GET /api/info
+    whatsapp.js             compartilhar pose no WhatsApp (Linking)
     passwordHasher.js       salt + SHA-256 + key stretching
     authService.js          cadastro / login / logout / sessão
     storage.js              persistência (AsyncStorage)

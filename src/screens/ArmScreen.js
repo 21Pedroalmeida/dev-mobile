@@ -1,27 +1,36 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Button, Card, Field, styles } from '../components/ui';
 import { useEsp } from '../context/EspContext';
 import { JOINT_NAMES } from '../services/protocol';
-import { colors } from '../theme';
+import { colors, radius } from '../theme';
 
 export default function ArmScreen() {
   const esp = useEsp();
   const { cfg } = esp;
   const [live, setLive] = useState(null); // valor exibido enquanto arrasta
+  const [modalVisible, setModalVisible] = useState(false); // Modal (aula 3)
   const [poseName, setPoseName] = useState('');
+  const [erro, setErro] = useState('');
+  const [salvo, setSalvo] = useState('');
 
   const value = (i) => (live && live.i === i ? live.a : cfg.pos[i]);
 
-  async function save() {
+  function fecharModal() {
+    setModalVisible(false);
+    setPoseName('');
+    setErro('');
+  }
+
+  async function salvar() {
     try {
       await esp.savePose(poseName, cfg.pos);
-      setPoseName('');
       esp.vibrate('tap');
-      Alert.alert('Pose salva', 'Veja na aba Poses.');
+      setSalvo(poseName.trim());
+      fecharModal();
     } catch (e) {
-      Alert.alert('Atenção', e.message);
+      setErro(e.message);
     }
   }
 
@@ -62,11 +71,44 @@ export default function ArmScreen() {
         </View>
       </Card>
 
-      <Card title="Salvar pose atual">
-        <Text style={[styles.muted, { marginBottom: 10 }]}>Ângulos: {cfg.pos.join('° · ')}°</Text>
-        <Field testID="pose-name" placeholder="Nome da pose (ex.: Pegar copo)" value={poseName} onChangeText={setPoseName} />
-        <Button testID="save-pose" title="Salvar pose" variant="accent" onPress={save} />
-      </Card>
+      <Button testID="open-save-modal" title="Salvar pose atual" variant="accent" onPress={() => setModalVisible(true)} />
+      {salvo ? (
+        <Text style={{ color: colors.success, textAlign: 'center', marginTop: 10 }}>
+          Pose "{salvo}" salva! Veja na aba Poses.
+        </Text>
+      ) : null}
+
+      {/* Modal: nova janela por cima da tela, sem trocar de página (aula 3) */}
+      <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={fecharModal}>
+        <Pressable style={modal.fundo} onPress={fecharModal}>
+          <Pressable style={modal.caixa} onPress={() => {}}>
+            <Text style={modal.titulo}>Salvar pose</Text>
+            <Text style={[styles.muted, { marginBottom: 12 }]}>Ângulos: {cfg.pos.join('° · ')}°</Text>
+            <Field
+              testID="pose-name"
+              placeholder="Nome (ex.: Pegar copo)"
+              value={poseName}
+              onChangeText={setPoseName}
+              autoFocus
+            />
+            {erro ? <Text style={{ color: colors.danger, marginBottom: 10 }}>{erro}</Text> : null}
+            <Button testID="save-pose" title="Salvar" variant="accent" onPress={salvar} />
+            <Button title="Cancelar" variant="outline" onPress={fecharModal} style={{ marginTop: 10 }} />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
+
+const modal = {
+  fundo: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  caixa: {
+    backgroundColor: colors.card,
+    padding: 20,
+    paddingBottom: 36,
+    borderTopLeftRadius: radius * 1.5,
+    borderTopRightRadius: radius * 1.5,
+  },
+  titulo: { color: colors.text, fontSize: 18, fontWeight: '800', marginBottom: 6 },
+};

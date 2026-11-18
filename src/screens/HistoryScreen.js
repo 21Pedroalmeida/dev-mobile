@@ -1,7 +1,8 @@
-import React from 'react';
-import { FlatList, Text, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { SectionList, Text, View } from 'react-native';
 import { Button, styles as ui } from '../components/ui';
 import { useEsp } from '../context/EspContext';
+import { groupHistoryByDay } from '../services/storage';
 import { colors } from '../theme';
 
 const ICON = { conexao: '📶', comando: '🛑', pose: '🦾', config: '⚙️' };
@@ -9,22 +10,31 @@ const ICON = { conexao: '📶', comando: '🛑', pose: '🦾', config: '⚙️' 
 export function formatTime(iso) {
   const d = new Date(iso);
   const p = (n) => String(n).padStart(2, '0');
-  return `${p(d.getDate())}/${p(d.getMonth() + 1)} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 
-/** Histórico de eventos persistido — outra FlatList. */
+/**
+ * Histórico de eventos agrupado por dia — SectionList (aula 2):
+ * igual à FlatList, mas com "sections" e um renderSectionHeader.
+ */
 export default function HistoryScreen() {
   const { history, clearHistory } = useEsp();
+  const sections = useMemo(() => groupHistoryByDay(history), [history]);
+
   return (
-    <FlatList
+    <SectionList
       testID="history-list"
       style={ui.screen}
       contentContainerStyle={ui.content}
-      data={history}
+      sections={sections}
       keyExtractor={(item) => item.id}
+      stickySectionHeadersEnabled={false}
       ListHeaderComponent={
-        history.length ? <Button small variant="outline" title="Limpar histórico" onPress={clearHistory} style={{ marginBottom: 12 }} /> : null
+        history.length ? <Button small variant="outline" title="Limpar histórico" onPress={clearHistory} style={{ marginBottom: 4 }} /> : null
       }
+      renderSectionHeader={({ section: { title } }) => (
+        <Text style={{ color: colors.accent, fontWeight: '800', marginTop: 16, marginBottom: 4 }}>{title}</Text>
+      )}
       renderItem={({ item }) => (
         <View style={{ flexDirection: 'row', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.cardBorder }}>
           <Text style={{ width: 30, fontSize: 16 }}>{ICON[item.type] || '•'}</Text>

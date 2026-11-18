@@ -27,21 +27,20 @@ export function EspProvider({ user, children }) {
     [user],
   );
 
-  // Carrega dados persistidos do usuário
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const [s, p, h] = await Promise.all([storage.loadSettings(user), storage.loadPoses(user), storage.loadHistory(user)]);
-      if (!alive) return;
-      setSettings(s);
-      setPoses(p);
-      setHistory(h);
-      if (s.notifications) setupNotifications().catch(() => {});
-    })();
-    return () => {
-      alive = false;
-    };
+  // Carrega dados persistidos do usuário (useEffect roda depois da 1ª renderização — aula 3/4)
+  const loadData = useCallback(async () => {
+    const [s, p, h] = await Promise.all([storage.loadSettings(user), storage.loadPoses(user), storage.loadHistory(user)]);
+    setSettings(s);
+    setPoses(p);
+    setHistory(h);
+    return s;
   }, [user]);
+
+  useEffect(() => {
+    loadData().then((s) => {
+      if (s.notifications) setupNotifications().catch(() => {});
+    });
+  }, [loadData]);
 
   // Reação às mudanças de conexão: vibra, notifica e registra no histórico
   const handleStatus = useCallback(
@@ -156,9 +155,14 @@ export function EspProvider({ user, children }) {
       async clearHistory() {
         setHistory(await storage.clearHistory(user));
       },
+      async clearAllData() {
+        const n = await storage.clearUserData(user);
+        await loadData();
+        return n;
+      },
       log,
     };
-  }, [user, settings, status, cfg, poses, history, send, log]);
+  }, [user, settings, status, cfg, poses, history, send, log, loadData]);
 
   return <EspContext.Provider value={api}>{children}</EspContext.Provider>;
 }

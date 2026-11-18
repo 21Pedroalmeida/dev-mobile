@@ -87,14 +87,14 @@ describe('FlatList de poses', () => {
     { id: 'b', name: 'Pegar', angles: [90, 60, 120, 160] },
   ];
 
-  test('renderiza um item por pose e aciona Aplicar/Excluir', async () => {
+  test('renderiza um item por pose e aciona Aplicar / abrir Detalhe', async () => {
     const onApply = jest.fn();
-    const onDelete = jest.fn();
+    const onOpen = jest.fn();
     await render(
       <FlatList
         data={poses}
         keyExtractor={(p) => p.id}
-        renderItem={({ item }) => <PoseItem pose={item} onApply={onApply} onDelete={onDelete} />}
+        renderItem={({ item }) => <PoseItem pose={item} onApply={onApply} onOpen={onOpen} />}
       />,
     );
     expect(screen.getByText('Repouso')).toBeTruthy();
@@ -102,7 +102,22 @@ describe('FlatList de poses', () => {
     expect(screen.getByText(/Garra 160°/)).toBeTruthy();
     await fireEvent.press(screen.getByTestId('apply-b'));
     expect(onApply).toHaveBeenCalledWith(poses[1]);
-    await fireEvent.press(screen.getByTestId('delete-a'));
-    expect(onDelete).toHaveBeenCalledWith(poses[0]);
+    await fireEvent.press(screen.getByTestId('pose-a'));
+    expect(onOpen).toHaveBeenCalledWith(poses[0]);
+  });
+});
+
+describe('Navegação com parâmetros (Detalhe da pose)', () => {
+  test('lê a pose de route.params e compartilha no WhatsApp', async () => {
+    const { Linking } = require('react-native');
+    const PoseDetailScreen = require('../src/screens/PoseDetailScreen').default;
+    jest.spyOn(require('../src/context/EspContext'), 'useEsp').mockReturnValue({ applyPose: jest.fn(), removePose: jest.fn() });
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const pose = { id: 'x', name: 'Acenar', angles: [10, 20, 30, 40] };
+    await render(<PoseDetailScreen navigation={{ goBack: jest.fn() }} route={{ params: { pose } }} />);
+    expect(screen.getByText('Acenar')).toBeTruthy();
+    expect(screen.getByText('40°')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('detail-whatsapp'));
+    expect(open).toHaveBeenCalledWith(expect.stringContaining('https://wa.me/?text='));
   });
 });

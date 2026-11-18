@@ -1,4 +1,7 @@
 import { generateSalt, hashPassword, verifyPassword, ITERATIONS } from './passwordHasher';
+import { USERNAME_REGEX } from './validators';
+
+export { USERNAME_REGEX };
 
 /**
  * Serviço de autenticação local.
@@ -10,7 +13,6 @@ import { generateSalt, hashPassword, verifyPassword, ITERATIONS } from './passwo
 const USER_PREFIX = 'bmp_user_';
 const SESSION_KEY = 'bmp_session';
 
-export const USERNAME_REGEX = /^[a-z0-9._-]{3,20}$/;
 export const MIN_PASSWORD = 6;
 
 export class AuthError extends Error {
