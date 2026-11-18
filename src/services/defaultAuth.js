@@ -6,10 +6,38 @@ import { createAuthService } from './authService';
 // No celular: Keychain (iOS) / Keystore (Android) via expo-secure-store.
 // No navegador (apenas para visualizar durante o desenvolvimento) o SecureStore
 // não existe, então usamos o localStorage.
+const memory = new Map();
+const ls = () => {
+  try {
+    return globalThis.localStorage || null;
+  } catch {
+    return null;
+  }
+};
 const webStore = {
-  getItemAsync: async (k) => globalThis.localStorage?.getItem(k) ?? null,
-  setItemAsync: async (k, v) => globalThis.localStorage?.setItem(k, v),
-  deleteItemAsync: async (k) => globalThis.localStorage?.removeItem(k),
+  getItemAsync: async (k) => {
+    try {
+      return ls() ? ls().getItem(k) : memory.get(k) ?? null;
+    } catch {
+      return memory.get(k) ?? null;
+    }
+  },
+  setItemAsync: async (k, v) => {
+    memory.set(k, v);
+    try {
+      ls()?.setItem(k, v);
+    } catch {
+      /* navegador sem localStorage: fica só na memória */
+    }
+  },
+  deleteItemAsync: async (k) => {
+    memory.delete(k);
+    try {
+      ls()?.removeItem(k);
+    } catch {
+      /* idem */
+    }
+  },
 };
 
 /** Instância do serviço de autenticação usando os módulos nativos do Expo. */
