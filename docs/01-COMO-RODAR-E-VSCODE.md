@@ -27,7 +27,18 @@
 | `__tests__/` | Os 78 testes automatizados |
 | `docs/` | Estas explicações |
 
-## 3. Rodar no celular
+## 3. Mostrar o app no computador (apresentação)
+
+No terminal do VS Code:
+
+```
+npx expo start --web
+```
+
+O app abre no navegador em `http://localhost:8081` (ou rode `npx expo start` e aperte **w**). Para ficar com formato de celular: **F12** e depois **Ctrl + Shift + M**.
+No navegador não há vibração, notificação nem as janelas de confirmação; isso só aparece no celular.
+
+## 4. Rodar no celular
 
 1. No terminal do VS Code: `npx expo start` → aparece um **QR code**.
 2. Celular e computador no **mesmo Wi-Fi**.
@@ -43,7 +54,7 @@ Para o carrinho de verdade: com o app aberto, conecte o celular no Wi-Fi **BMPTE
 - "Projeto incompatível com o Expo Go": o projeto usa o **Expo SDK 54**; no Android, baixe o Expo Go para o SDK 54 em https://expo.dev/go
 - Tela vermelha: `Ctrl + C` no terminal e `npx expo start -c`
 
-## 4. Rodar os testes
+## 5. Rodar os testes
 
 | Comando | O que faz |
 |---|---|
