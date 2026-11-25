@@ -1,3 +1,8 @@
+/**
+ * TESTE UNITÁRIO com MOCK do AsyncStorage (aula 6): o "banco" do celular é trocado
+ * por um falso na memória (jest.setup.js). Confere salvar, excluir e separar dados por usuário.
+ * Rodar só este arquivo: npx jest __tests__/storage.test.js
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as storage from '../src/services/storage';
 

@@ -1,3 +1,8 @@
+/**
+ * TESTE UNITÁRIO (aula 6): funções puras do protocolo do carrinho.
+ * Confere os comandos JSON, a conta do joystick e a mistura das rodas.
+ * Rodar só este arquivo: npx jest __tests__/protocol.test.js
+ */
 import { cmd, joystickVector, mixDrive, parseMessage, wsUrl, infoUrl } from '../src/services/protocol';
 
 describe('Protocolo do ESP32', () => {

@@ -1,3 +1,8 @@
+/**
+ * TESTE com MOCK DE API (igual ao exemplo da aula 6: jest.mock('axios')) + regex,
+ * WhatsApp (Linking), getAllKeys/multiGet e histórico por dia (SectionList).
+ * Rodar só este arquivo: npx jest __tests__/aulaRecursos.test.js
+ */
 import axios from 'axios';
 import { Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';

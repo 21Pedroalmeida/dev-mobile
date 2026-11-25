@@ -1,3 +1,8 @@
+/**
+ * TESTE DE INTERFACE (aula 6): usa a Testing Library para desenhar a tela (render),
+ * "tocar" nos botões (fireEvent) e conferir o que aparece (expect). Telas: Login, Cadastro, FlatList e Detalhe.
+ * Rodar só este arquivo: npx jest __tests__/screens.test.js
+ */
 import React from 'react';
 import { FlatList } from 'react-native';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';

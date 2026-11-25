@@ -3,6 +3,12 @@
 App em **React Native (Expo SDK 54 — compatível com o Expo Go da App Store e da Play Store)** para controlar o carrinho 4×4 com braço robótico
 do firmware `BMPTECH_Car_Controller` (ESP32-S3), via WebSocket (`ws://192.168.4.1/ws`).
 
+## Documentação para estudar / apresentar
+
+- [docs/01-COMO-RODAR-E-VSCODE.md](docs/01-COMO-RODAR-E-VSCODE.md) — rodar no celular, abrir no VS Code, rodar os testes
+- [docs/02-CODIGO-EXPLICADO.md](docs/02-CODIGO-EXPLICADO.md) — os trechos principais do código, explicados
+- [docs/03-TESTES-EXPLICADOS.md](docs/03-TESTES-EXPLICADOS.md) — os 78 testes: unitário, mock de API e interface
+
 ## Requisitos do trabalho → onde estão
 
 | Requisito | Implementação | Arquivos |

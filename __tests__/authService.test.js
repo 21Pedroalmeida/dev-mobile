@@ -1,3 +1,8 @@
+/**
+ * TESTE UNITÁRIO com MOCK (aula 6): o SecureStore do celular é trocado por um "cofre"
+ * falso na memória (test-utils/helpers.js). Confere cadastro, login, senha errada e sessão.
+ * Rodar só este arquivo: npx jest __tests__/authService.test.js
+ */
 import { createAuthService, validateCredentials } from '../src/services/authService';
 import { memoryStore, nodeDigest, nodeRandomBytes } from '../test-utils/helpers';
 

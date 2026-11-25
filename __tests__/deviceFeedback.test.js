@@ -1,3 +1,8 @@
+/**
+ * TESTE com MOCK (aula 6): vibração e notificações do celular são trocadas por funções
+ * falsas (jest.fn / jest.spyOn), e o teste confere se foram chamadas do jeito certo.
+ * Rodar só este arquivo: npx jest __tests__/deviceFeedback.test.js
+ */
 import { Vibration } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { vibrate, notify, setupNotifications, PATTERNS } from '../src/services/deviceFeedback';

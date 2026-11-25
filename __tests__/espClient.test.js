@@ -1,3 +1,8 @@
+/**
+ * TESTE com MOCK de WebSocket + relógio falso (aula 6): o carrinho é simulado por um
+ * WebSocket falso, e jest.useFakeTimers() "pula" o tempo. Confere conexão, reenvio a cada 70 ms e reconexão.
+ * Rodar só este arquivo: npx jest __tests__/espClient.test.js
+ */
 import { EspClient } from '../src/services/espClient';
 import { fakeWebSocketClass } from '../test-utils/helpers';
 

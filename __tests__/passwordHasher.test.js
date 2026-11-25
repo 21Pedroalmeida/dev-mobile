@@ -1,3 +1,8 @@
+/**
+ * TESTE UNITÁRIO (aula 6): testa uma função sozinha, sem tela e sem internet.
+ * Confere o hash da senha: salt aleatório, SHA-256, mil rodadas e comparação segura.
+ * Rodar só este arquivo: npx jest __tests__/passwordHasher.test.js
+ */
 import { hashPassword, verifyPassword, generateSalt, safeEqual, bytesToHex } from '../src/services/passwordHasher';
 import { nodeDigest, nodeRandomBytes } from '../test-utils/helpers';
 
