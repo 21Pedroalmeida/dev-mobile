@@ -50,8 +50,8 @@ No navegador não há vibração, notificação nem as janelas de confirmação;
 Para o carrinho de verdade: com o app aberto, conecte o celular no Wi-Fi **BMPTECH-Car** (senha `12345678`) → menu → **Configurações** → desligue **Modo demonstração**.
 
 **Problemas comuns**
-- QR code não conecta (Wi-Fi da faculdade): `npx expo start --tunnel`
-- "Projeto incompatível com o Expo Go": o projeto usa o **Expo SDK 54**; no Android, baixe o Expo Go para o SDK 54 em https://expo.dev/go
+- QR code não conecta (Wi-Fi da faculdade): `npx expo start --tunnel ngrok` (o túnel padrão do SDK 58 pede login no Expo)
+- "Projeto incompatível com o Expo Go": o projeto usa o **Expo SDK 58** (Expo Go atual da Play Store); para o iPhone, use o branch `sdk-54`
 - Tela vermelha: `Ctrl + C` no terminal e `npx expo start -c`
 
 ## 5. Rodar os testes

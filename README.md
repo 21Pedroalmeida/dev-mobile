@@ -1,6 +1,6 @@
 # BMP Tech Car — App Mobile
 
-App em **React Native (Expo SDK 54 — compatível com o Expo Go da App Store e da Play Store)** para controlar o carrinho 4×4 com braço robótico
+App em **React Native (Expo SDK 58 — compatível com o Expo Go atual da Play Store; versão para o Expo Go do iPhone (SDK 54) no branch `sdk-54`)** para controlar o carrinho 4×4 com braço robótico
 do firmware `BMPTECH_Car_Controller` (ESP32-S3), via WebSocket (`ws://192.168.4.1/ws`).
 
 ## Documentação para estudar / apresentar
@@ -117,7 +117,7 @@ __tests__/                  testes automatizados
 
 ## Rodando no iPhone
 
-1. Instale o **Expo Go** pela App Store (ele roda projetos SDK 54, que é o deste app).
+1. Instale o **Expo Go** pela App Store (se o Expo Go do iPhone não aceitar o SDK 58, use o branch `sdk-54`).
 2. No computador (Windows/Mac/Linux, com Node.js 20+): `npm install` e `npx expo start`.
 3. iPhone e computador no **mesmo Wi-Fi**. Abra a **Câmera** do iPhone e aponte para o QR code → "Abrir no Expo Go".
 4. Quando o iOS perguntar sobre **"Rede Local"**, toque em **Permitir** (sem isso o app não acha o computador nem o ESP32).
@@ -126,7 +126,7 @@ __tests__/                  testes automatizados
    (pode aparecer um aviso de que perdeu a conexão com o computador — pode ignorar).
 6. No app: Config → desligue **Modo demonstração** → Reconectar.
 
-Se a rede da faculdade bloquear a conexão celular↔computador, use `npx expo start --tunnel`.
+Se a rede da faculdade bloquear a conexão celular↔computador, use `npx expo start --tunnel ngrok` (o túnel padrão do SDK 58 pede login no Expo).
 
 ## Observação sobre o Expo Go
 Vibração, notificações locais, SecureStore e AsyncStorage funcionam no **Expo Go**.
